@@ -1,4 +1,4 @@
-use crate::conversions::result::ResConv;
+use crate::*;
 
 #[test]
 pub fn usize_ok() {
@@ -28,4 +28,23 @@ pub fn usize_some() {
 
     assert_eq!(ok_t, ok_w, "Options should be equal.");
     assert_ne!(ok_t, None, "Option shouldn't be None.");
+}
+
+#[test]
+pub fn result_conv() {
+    let a = "foobar";
+    let b = a.ok();
+    let c = a.some();
+    let d = b.to_option();
+    let e = c.to_result();
+    let f = d.to_result();
+    let o: Option<String> = f.to_option();
+
+    assert_ne!(b, Err(()), "b should be Ok");
+    assert_eq!(Some(a), d, "values should match");
+    assert_eq!(c, d, "values should match");
+    assert_ne!(e, Err(()), "e should be Ok");
+    assert_eq!(Ok(a), e, "values should match");
+    assert_eq!(e, f, "values should match");
+    assert_eq!(o, a.to_owned().some(), "values should match");
 }
