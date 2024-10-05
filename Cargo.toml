@@ -1,7 +1,7 @@
 [package]
 name = "ps-util"
 description = "This crate aims to provide generally helpful utility functions and traits."
-version = "0.1.0-1"
+version = "0.1.0-2"
 edition = "2021"
 license = "GPL-3.0-or-later"
 
