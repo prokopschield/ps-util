@@ -27,8 +27,8 @@ pub trait ToResult {
 impl<T> ToResult for T {}
 
 pub trait ResConv<T, E: Default> {
-    fn to_option(self) -> Option<T>;
-    fn to_result(self) -> Result<T, E>;
+    fn into_option(self) -> Option<T>;
+    fn into_result(self) -> Result<T, E>;
 }
 
 impl<Input, Output, Err: Default> ResConv<Output, Err> for Result<Input, Err>
@@ -36,7 +36,7 @@ where
     Input: Into<Output>,
 {
     #[inline(always)]
-    fn to_option(self) -> Option<Output> {
+    fn into_option(self) -> Option<Output> {
         match self {
             Ok(value) => value.into().some(),
             _ => None,
@@ -44,7 +44,7 @@ where
     }
 
     #[inline(always)]
-    fn to_result(self) -> Result<Output, Err> {
+    fn into_result(self) -> Result<Output, Err> {
         match self {
             Ok(value) => value.into().ok(),
             Err(err) => err.err(),
@@ -57,7 +57,7 @@ where
     Input: Into<Output>,
 {
     #[inline(always)]
-    fn to_option(self) -> Option<Output> {
+    fn into_option(self) -> Option<Output> {
         match self {
             Some(value) => value.into().some(),
             _ => None,
@@ -65,7 +65,7 @@ where
     }
 
     #[inline(always)]
-    fn to_result(self) -> Result<Output, Err> {
+    fn into_result(self) -> Result<Output, Err> {
         match self {
             Some(value) => value.into().ok(),
             _ => Err::default().err(),

@@ -35,10 +35,10 @@ pub fn result_conv() {
     let a = "foobar";
     let b = a.ok();
     let c = a.some();
-    let d = b.to_option();
-    let e = c.to_result();
-    let f = d.to_result();
-    let o: Option<String> = f.to_option();
+    let d = b.into_option();
+    let e = c.into_result();
+    let f = d.into_result();
+    let o: Option<String> = f.into_option();
 
     assert_ne!(b, Err(()), "b should be Ok");
     assert_eq!(Some(a), d, "values should match");
