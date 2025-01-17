@@ -26,12 +26,12 @@ pub trait ToResult {
 
 impl<T> ToResult for T {}
 
-pub trait ResConv<T, E: Default> {
+pub trait ResConv<T, E> {
     fn into_option(self) -> Option<T>;
     fn into_result(self) -> Result<T, E>;
 }
 
-impl<Input, Output, Err: Default> ResConv<Output, Err> for Result<Input, Err>
+impl<Input, Output, Err> ResConv<Output, Err> for Result<Input, Err>
 where
     Input: Into<Output>,
 {
