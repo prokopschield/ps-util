@@ -1,3 +1,5 @@
+#![allow(clippy::panic)] // This file only contains tests, so panics are expected.
+
 use crate::*;
 
 #[test]
@@ -32,19 +34,23 @@ pub fn usize_some() {
 
 #[test]
 pub fn result_conv() {
-    let a = "foobar";
-    let b = a.ok();
-    let c = a.some();
-    let d = b.into_option();
-    let e = c.into_result();
-    let f = d.into_result();
-    let o: Option<String> = f.into_option();
+    let value = "foobar";
+    let ok_value = value.ok();
+    let some_value = value.some();
+    let option_value = ok_value.into_option();
+    let result_value = some_value.into_result();
+    let result_option_value = option_value.into_result();
+    let option_result_value: Option<String> = result_option_value.into_option();
 
-    assert_ne!(b, Err(()), "b should be Ok");
-    assert_eq!(Some(a), d, "values should match");
-    assert_eq!(c, d, "values should match");
-    assert_ne!(e, Err(()), "e should be Ok");
-    assert_eq!(Ok(a), e, "values should match");
-    assert_eq!(e, f, "values should match");
-    assert_eq!(o, a.to_owned().some(), "values should match");
+    assert_ne!(ok_value, Err(()), "b should be Ok");
+    assert_eq!(Some(value), option_value, "values should match");
+    assert_eq!(some_value, option_value, "values should match");
+    assert_ne!(result_value, Err(()), "e should be Ok");
+    assert_eq!(Ok(value), result_value, "values should match");
+    assert_eq!(result_value, result_option_value, "values should match");
+    assert_eq!(
+        option_result_value,
+        value.to_owned().some(),
+        "values should match"
+    );
 }
