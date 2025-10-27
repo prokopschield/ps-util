@@ -1,6 +1,6 @@
-pub mod conversions;
+mod conversions;
 
 #[cfg(test)]
-pub mod tests;
+mod tests;
 
 pub use conversions::*;

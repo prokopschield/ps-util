@@ -1,1 +1,1 @@
-pub mod result;
+mod result;

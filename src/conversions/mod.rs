@@ -1,3 +1,3 @@
-pub mod result;
+mod result;
 
 pub use result::*;
