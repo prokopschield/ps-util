@@ -1,3 +1,4 @@
 mod conversions;
 mod subarray;
+mod subarray_checked;
 mod subarray_unchecked;
