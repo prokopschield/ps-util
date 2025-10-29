@@ -57,7 +57,7 @@ pub trait Array<T> {
     /// assert!(arr.every(|x| x % 2 == 0));
     /// assert!(!arr.every(|x| x > &5));
     /// ```
-    fn every(&self, predicate: impl Fn(&T) -> bool) -> bool;
+    fn every(&self, predicate: impl FnMut(&T) -> bool) -> bool;
 
     /// Returns a reference to the first element that matches the predicate.
     ///
@@ -69,7 +69,7 @@ pub trait Array<T> {
     /// assert_eq!(arr.find(|x| x > &2), Some(&3));
     /// assert_eq!(arr.find(|x| x > &10), None);
     /// ```
-    fn find(&self, predicate: impl Fn(&T) -> bool) -> Option<&T>;
+    fn find(&self, predicate: impl FnMut(&T) -> bool) -> Option<&T>;
 
     /// Returns the index of the first element that matches the predicate.
     ///
@@ -81,7 +81,7 @@ pub trait Array<T> {
     /// assert_eq!(arr.find_index(|x| x > &2), Some(2));
     /// assert_eq!(arr.find_index(|x| x > &10), None);
     /// ```
-    fn find_index(&self, predicate: impl Fn(&T) -> bool) -> Option<usize>;
+    fn find_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize>;
 
     /// Returns a reference to the last element that matches the predicate.
     ///
@@ -93,7 +93,7 @@ pub trait Array<T> {
     /// assert_eq!(arr.find_last(|x| x < &4), Some(&3));
     /// assert_eq!(arr.find_last(|x| x > &10), None);
     /// ```
-    fn find_last(&self, predicate: impl Fn(&T) -> bool) -> Option<&T>;
+    fn find_last(&self, predicate: impl FnMut(&T) -> bool) -> Option<&T>;
 
     /// Returns the index of the last element that matches the predicate.
     ///
@@ -105,7 +105,7 @@ pub trait Array<T> {
     /// assert_eq!(arr.find_last_index(|x| x < &4), Some(2));
     /// assert_eq!(arr.find_last_index(|x| x > &10), None);
     /// ```
-    fn find_last_index(&self, predicate: impl Fn(&T) -> bool) -> Option<usize>;
+    fn find_last_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize>;
 
     /// Returns a vector containing all elements that match the predicate.
     ///
@@ -116,7 +116,7 @@ pub trait Array<T> {
     /// let arr = [1, 2, 3, 4];
     /// assert_eq!(arr.filter(|x| x % 2 == 0), vec![2, 4]);
     /// ```
-    fn filter(&self, predicate: impl Fn(&T) -> bool) -> Vec<T>
+    fn filter(&self, predicate: impl FnMut(&T) -> bool) -> Vec<T>
     where
         T: Clone;
 
@@ -144,7 +144,7 @@ pub trait Array<T> {
     /// let result = arr.flat_map(|x| vec![*x, *x * 2]);
     /// assert_eq!(result, vec![1, 2, 2, 4, 3, 6]);
     /// ```
-    fn flat_map<O>(&self, mapper: impl Fn(&T) -> Vec<O>) -> Vec<O>;
+    fn flat_map<O>(&self, mapper: impl FnMut(&T) -> Vec<O>) -> Vec<O>;
 
     /// Applies a closure to each element for side effects.
     ///
@@ -155,7 +155,7 @@ pub trait Array<T> {
     /// let arr = [1, 2, 3];
     /// arr.for_each(|x| println!("{}", x));
     /// ```
-    fn for_each(&self, cb: impl Fn(&T));
+    fn for_each(&self, cb: impl FnMut(&T));
 
     /// Checks whether the array contains the specified value.
     ///
@@ -262,7 +262,7 @@ pub trait Array<T> {
     /// let arr = [1, 2, 3u8];
     /// assert_eq!(arr.as_slice().map(|x| x * 2), vec![2, 4, 6]);
     /// ```
-    fn map<O>(&self, mapper: impl Fn(&T) -> O) -> Vec<O>;
+    fn map<O>(&self, mapper: impl FnMut(&T) -> O) -> Vec<O>;
 
     /// Reduces the array to a single value by applying a callback
     /// with an accumulator, starting from the left.
@@ -275,7 +275,7 @@ pub trait Array<T> {
     /// let sum = arr.reduce(|acc, x| acc + x, 0);
     /// assert_eq!(sum, 10);
     /// ```
-    fn reduce<O>(&self, reducer: impl Fn(O, &T) -> O, initial: O) -> O;
+    fn reduce<O>(&self, reducer: impl FnMut(O, &T) -> O, initial: O) -> O;
 
     /// Reduces the array to a single value by applying a callback
     /// with an accumulator, starting from the right.
@@ -291,7 +291,7 @@ pub trait Array<T> {
     /// );
     /// assert_eq!(result, "321");
     /// ```
-    fn reduce_right<O>(&self, reducer: impl Fn(O, &T) -> O, initial: O) -> O;
+    fn reduce_right<O>(&self, reducer: impl FnMut(O, &T) -> O, initial: O) -> O;
 
     /// Returns a slice of the array from `start` to `end` (exclusive).
     ///
@@ -322,7 +322,7 @@ pub trait Array<T> {
     /// assert!(arr.some(|x| x > &2));
     /// assert!(!arr.some(|x| x > &10));
     /// ```
-    fn some(&self, predicate: impl Fn(&T) -> bool) -> bool;
+    fn some(&self, predicate: impl FnMut(&T) -> bool) -> bool;
 
     /// Returns a fixed-size array reference starting at the given index.
     ///
@@ -413,11 +413,11 @@ where
         self.as_ref().iter().enumerate()
     }
 
-    fn every(&self, predicate: impl Fn(&T) -> bool) -> bool {
+    fn every(&self, predicate: impl FnMut(&T) -> bool) -> bool {
         self.as_ref().iter().all(predicate)
     }
 
-    fn filter(&self, predicate: impl Fn(&T) -> bool) -> Vec<T>
+    fn filter(&self, mut predicate: impl FnMut(&T) -> bool) -> Vec<T>
     where
         T: Clone,
     {
@@ -428,19 +428,19 @@ where
             .collect()
     }
 
-    fn find(&self, predicate: impl Fn(&T) -> bool) -> Option<&T> {
+    fn find(&self, mut predicate: impl FnMut(&T) -> bool) -> Option<&T> {
         Iterator::find(&mut self.as_ref().iter(), |item| predicate(item))
     }
 
-    fn find_index(&self, predicate: impl Fn(&T) -> bool) -> Option<usize> {
+    fn find_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize> {
         self.as_ref().iter().position(predicate)
     }
 
-    fn find_last(&self, predicate: impl Fn(&T) -> bool) -> Option<&T> {
+    fn find_last(&self, mut predicate: impl FnMut(&T) -> bool) -> Option<&T> {
         self.as_ref().iter().rfind(|item| predicate(item))
     }
 
-    fn find_last_index(&self, predicate: impl Fn(&T) -> bool) -> Option<usize> {
+    fn find_last_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize> {
         self.as_ref().iter().rposition(predicate)
     }
 
@@ -460,11 +460,11 @@ where
         flat
     }
 
-    fn flat_map<O>(&self, mapper: impl Fn(&T) -> Vec<O>) -> Vec<O> {
+    fn flat_map<O>(&self, mapper: impl FnMut(&T) -> Vec<O>) -> Vec<O> {
         self.as_ref().iter().flat_map(mapper).collect()
     }
 
-    fn for_each(&self, cb: impl Fn(&T)) {
+    fn for_each(&self, cb: impl FnMut(&T)) {
         self.as_ref().iter().for_each(cb);
     }
 
@@ -519,11 +519,11 @@ where
         self.as_ref().len()
     }
 
-    fn map<O>(&self, mapper: impl Fn(&T) -> O) -> Vec<O> {
+    fn map<O>(&self, mapper: impl FnMut(&T) -> O) -> Vec<O> {
         self.as_ref().iter().map(mapper).collect()
     }
 
-    fn reduce<O>(&self, reducer: impl Fn(O, &T) -> O, initial: O) -> O {
+    fn reduce<O>(&self, mut reducer: impl FnMut(O, &T) -> O, initial: O) -> O {
         let mut value = initial;
 
         for item in self.as_ref() {
@@ -533,7 +533,7 @@ where
         value
     }
 
-    fn reduce_right<O>(&self, reducer: impl Fn(O, &T) -> O, initial: O) -> O {
+    fn reduce_right<O>(&self, mut reducer: impl FnMut(O, &T) -> O, initial: O) -> O {
         let mut value = initial;
 
         for item in self.as_ref().iter().rev() {
@@ -551,7 +551,7 @@ where
         &full[start..end]
     }
 
-    fn some(&self, predicate: impl Fn(&T) -> bool) -> bool {
+    fn some(&self, predicate: impl FnMut(&T) -> bool) -> bool {
         self.as_ref().iter().any(predicate)
     }
 
