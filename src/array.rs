@@ -131,10 +131,9 @@ pub trait Array<T> {
     /// ```
     fn flat(&self) -> Vec<T::Item>
     where
-        T: Clone + IntoIterator,
-        T::Item: Clone;
+        T: Clone + IntoIterator;
 
-    /// Maps each element to a vector and flattens the result.
+    /// Maps each element to an iterable and flattens the result.
     ///
     /// # Examples
     ///
@@ -144,7 +143,9 @@ pub trait Array<T> {
     /// let result = arr.flat_map(|x| vec![*x, *x * 2]);
     /// assert_eq!(result, vec![1, 2, 2, 4, 3, 6]);
     /// ```
-    fn flat_map<O>(&self, mapper: impl FnMut(&T) -> Vec<O>) -> Vec<O>;
+    fn flat_map<O, I>(&self, mapper: impl FnMut(&T) -> I) -> Vec<O>
+    where
+        I: IntoIterator<Item = O>;
 
     /// Applies a closure to each element for side effects.
     ///
@@ -447,20 +448,14 @@ where
     fn flat(&self) -> Vec<<T>::Item>
     where
         T: Clone + IntoIterator,
-        <T>::Item: Clone,
     {
-        let mut flat = Vec::new();
-
-        for a in self.as_ref() {
-            for item in a.clone() {
-                flat.push(item);
-            }
-        }
-
-        flat
+        self.as_ref().iter().cloned().flatten().collect()
     }
 
-    fn flat_map<O>(&self, mapper: impl FnMut(&T) -> Vec<O>) -> Vec<O> {
+    fn flat_map<O, I>(&self, mapper: impl FnMut(&T) -> I) -> Vec<O>
+    where
+        I: IntoIterator<Item = O>,
+    {
         self.as_ref().iter().flat_map(mapper).collect()
     }
 
@@ -472,14 +467,14 @@ where
     where
         T: PartialEq,
     {
-        self.some(|item| item == value)
+        self.as_ref().contains(value)
     }
 
     fn index_of(&self, value: &T) -> Option<usize>
     where
         T: PartialEq,
     {
-        self.find_index(|item| item == value)
+        self.as_ref().iter().position(|x| x == value)
     }
 
     fn is_empty(&self) -> bool {
@@ -493,12 +488,12 @@ where
         let mut a = String::new();
         let mut iterator = self.as_ref().iter();
 
-        if let Some(item) = iterator.next() {
-            write!(&mut a, "{item}")?;
-        }
+        if let Some(first) = iterator.next() {
+            write!(&mut a, "{first}")?;
 
-        for item in iterator {
-            write!(&mut a, "{separator}{item}")?;
+            for item in iterator {
+                write!(&mut a, "{separator}{item}")?;
+            }
         }
 
         Ok(a)
@@ -523,30 +518,19 @@ where
         self.as_ref().iter().map(mapper).collect()
     }
 
-    fn reduce<O>(&self, mut reducer: impl FnMut(O, &T) -> O, initial: O) -> O {
-        let mut value = initial;
-
-        for item in self.as_ref() {
-            value = reducer(value, item);
-        }
-
-        value
+    fn reduce<O>(&self, reducer: impl FnMut(O, &T) -> O, initial: O) -> O {
+        self.as_ref().iter().fold(initial, reducer)
     }
 
-    fn reduce_right<O>(&self, mut reducer: impl FnMut(O, &T) -> O, initial: O) -> O {
-        let mut value = initial;
-
-        for item in self.as_ref().iter().rev() {
-            value = reducer(value, item);
-        }
-
-        value
+    fn reduce_right<O>(&self, reducer: impl FnMut(O, &T) -> O, initial: O) -> O {
+        self.as_ref().iter().rev().fold(initial, reducer)
     }
 
     fn slice(&self, start: usize, end: Option<usize>) -> &[T] {
         let full = self.as_ref();
-        let start = usize::min(start, full.len());
-        let end = usize::min(usize::max(start, end.unwrap_or(full.len())), full.len());
+        let len = full.len();
+        let start = usize::min(start, len);
+        let end = end.unwrap_or(len).clamp(start, len);
 
         &full[start..end]
     }
