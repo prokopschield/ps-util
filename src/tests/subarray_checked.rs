@@ -153,9 +153,9 @@ fn floating_point_numbers() {
 fn large_vector_middle() {
     let data: Vec<i32> = (0..1000).collect();
     let chunk: Option<&[i32; 10]> = subarray_checked::<10, i32>(&data, 500);
-    assert!(chunk.is_some());
-    assert_eq!(chunk.unwrap()[0], 500);
-    assert_eq!(chunk.unwrap()[9], 509);
+    let chunk = chunk.expect("expected a 10-element subarray at index 500");
+    assert_eq!(chunk[0], 500);
+    assert_eq!(chunk[9], 509);
 }
 
 #[test]

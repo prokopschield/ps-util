@@ -42,7 +42,8 @@ fn test_unchecked_with_strings() {
 fn test_unchecked_with_floats() {
     let data = [1.1, 2.2, 3.3, 4.4];
     let result: &[f64; 2] = unsafe { subarray_unchecked::<2, f64>(&data, 1) };
-    assert_eq!(result, &[2.2, 3.3]);
+    assert!((result[0] - 2.2).abs() < f64::EPSILON);
+    assert!((result[1] - 3.3).abs() < f64::EPSILON);
 }
 
 #[test]
