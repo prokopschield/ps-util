@@ -325,6 +325,21 @@ pub trait Array<T> {
     /// ```
     fn some(&self, predicate: impl FnMut(&T) -> bool) -> bool;
 
+    /// Tests whether no elements match the predicate.
+    ///
+    /// Returns `true` if the predicate returns `false` for every element,
+    /// or if the array is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 3];
+    /// assert!(arr.none(|x| x > &10));
+    /// assert!(!arr.none(|x| x > &2));
+    /// ```
+    fn none(&self, predicate: impl FnMut(&T) -> bool) -> bool;
+
     /// Returns a fixed-size array reference starting at the given index.
     ///
     /// # Panics
@@ -537,6 +552,10 @@ where
 
     fn some(&self, predicate: impl FnMut(&T) -> bool) -> bool {
         self.as_ref().iter().any(predicate)
+    }
+
+    fn none(&self, predicate: impl FnMut(&T) -> bool) -> bool {
+        !self.as_ref().iter().any(predicate)
     }
 
     fn subarray<const S: usize>(&self, index: usize) -> &[T; S] {
