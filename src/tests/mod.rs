@@ -1,3 +1,4 @@
+#![allow(clippy::expect_used)]
 mod conversions;
 mod subarray;
 mod subarray_checked;
