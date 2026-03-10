@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::{cmp::Ordering, fmt::Write};
 
 use crate::{subarray, subarray_checked, subarray_unchecked};
 
@@ -59,6 +59,31 @@ pub trait Array<T> {
     /// ```
     fn every(&self, predicate: impl FnMut(&T) -> bool) -> bool;
 
+    /// Tests whether all elements are equal to the comparator target.
+    ///
+    /// Returns `true` if the array is empty or every element compares as
+    /// [`Ordering::Equal`].
+    ///
+    /// **Only the first and last elements are checked.**
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(1)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    ///
+    /// let arr = [2, 2, 2];
+    /// assert!(arr.every_equal_in_sorted_by(|x| x.cmp(&2)));
+    ///
+    /// let arr = [1, 2, 2];
+    /// assert!(!arr.every_equal_in_sorted_by(|x| x.cmp(&2)));
+    /// ```
+    fn every_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> bool;
+
     /// Returns a reference to the first element that matches the predicate.
     ///
     /// # Examples
@@ -70,6 +95,23 @@ pub trait Array<T> {
     /// assert_eq!(arr.find(|x| x > &10), None);
     /// ```
     fn find(&self, predicate: impl FnMut(&T) -> bool) -> Option<&T>;
+
+    /// Returns the first element equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 2, 3];
+    /// assert_eq!(arr.find_equal_in_sorted_by(|x| x.cmp(&2)), Some(&2));
+    /// assert_eq!(arr.find_equal_in_sorted_by(|x| x.cmp(&5)), None);
+    /// ```
+    fn find_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> Option<&T>;
 
     /// Returns the index of the first element that matches the predicate.
     ///
@@ -83,6 +125,26 @@ pub trait Array<T> {
     /// ```
     fn find_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize>;
 
+    /// Returns the index of the first element equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 2, 3];
+    /// assert_eq!(arr.find_index_equal_in_sorted_by(|x| x.cmp(&2)), Some(1));
+    /// assert_eq!(arr.find_index_equal_in_sorted_by(|x| x.cmp(&5)), None);
+    /// ```
+    fn find_index_equal_in_sorted_by(
+        &self,
+        comparator: impl FnMut(&T) -> Ordering,
+    ) -> Option<usize>;
+
     /// Returns a reference to the last element that matches the predicate.
     ///
     /// # Examples
@@ -94,6 +156,23 @@ pub trait Array<T> {
     /// assert_eq!(arr.find_last(|x| x > &10), None);
     /// ```
     fn find_last(&self, predicate: impl FnMut(&T) -> bool) -> Option<&T>;
+
+    /// Returns the last element equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 2, 3];
+    /// assert_eq!(arr.find_last_equal_in_sorted_by(|x| x.cmp(&2)), Some(&2));
+    /// assert_eq!(arr.find_last_equal_in_sorted_by(|x| x.cmp(&5)), None);
+    /// ```
+    fn find_last_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> Option<&T>;
 
     /// Returns the index of the last element that matches the predicate.
     ///
@@ -107,6 +186,26 @@ pub trait Array<T> {
     /// ```
     fn find_last_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize>;
 
+    /// Returns the index of the last element equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 2, 3];
+    /// assert_eq!(arr.find_last_index_equal_in_sorted_by(|x| x.cmp(&2)), Some(3));
+    /// assert_eq!(arr.find_last_index_equal_in_sorted_by(|x| x.cmp(&5)), None);
+    /// ```
+    fn find_last_index_equal_in_sorted_by(
+        &self,
+        comparator: impl FnMut(&T) -> Ordering,
+    ) -> Option<usize>;
+
     /// Returns a vector containing all elements that match the predicate.
     ///
     /// # Examples
@@ -117,6 +216,25 @@ pub trait Array<T> {
     /// assert_eq!(arr.filter(|x| x % 2 == 0), vec![2, 4]);
     /// ```
     fn filter(&self, predicate: impl FnMut(&T) -> bool) -> Vec<T>
+    where
+        T: Clone;
+
+    /// Returns all elements equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n + k)`, where `k` is the number of matches.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 2, 3];
+    /// assert_eq!(arr.filter_equal_in_sorted_by(|x| x.cmp(&2)), vec![2, 2, 2]);
+    /// assert_eq!(arr.filter_equal_in_sorted_by(|x| x.cmp(&5)), Vec::<i32>::new());
+    /// ```
+    fn filter_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> Vec<T>
     where
         T: Clone;
 
@@ -325,6 +443,23 @@ pub trait Array<T> {
     /// ```
     fn some(&self, predicate: impl FnMut(&T) -> bool) -> bool;
 
+    /// Tests whether any element is equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 3];
+    /// assert!(arr.some_equal_in_sorted_by(|x| x.cmp(&2)));
+    /// assert!(!arr.some_equal_in_sorted_by(|x| x.cmp(&5)));
+    /// ```
+    fn some_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> bool;
+
     /// Tests whether no elements match the predicate.
     ///
     /// Returns `true` if the predicate returns `false` for every element,
@@ -339,6 +474,23 @@ pub trait Array<T> {
     /// assert!(!arr.none(|x| x > &2));
     /// ```
     fn none(&self, predicate: impl FnMut(&T) -> bool) -> bool;
+
+    /// Tests whether no element is equal to the comparator target.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 3];
+    /// assert!(arr.none_equal_in_sorted_by(|x| x.cmp(&5)));
+    /// assert!(!arr.none_equal_in_sorted_by(|x| x.cmp(&2)));
+    /// ```
+    fn none_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> bool;
 
     /// Returns a fixed-size array reference starting at the given index.
     ///
@@ -433,6 +585,16 @@ where
         self.as_ref().iter().all(predicate)
     }
 
+    fn every_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> bool {
+        let slice = self.as_ref();
+
+        match slice {
+            [] => true,
+            [only] => comparator(only).is_eq(),
+            [first, .., last] => comparator(first).is_eq() && comparator(last).is_eq(),
+        }
+    }
+
     fn filter(&self, mut predicate: impl FnMut(&T) -> bool) -> Vec<T>
     where
         T: Clone,
@@ -444,20 +606,62 @@ where
             .collect()
     }
 
+    fn filter_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> Vec<T>
+    where
+        T: Clone,
+    {
+        let slice = self.as_ref();
+
+        let Some((start, end)) = equal_range_by(slice, &mut comparator) else {
+            return Vec::new();
+        };
+
+        slice[start..end].to_vec()
+    }
+
     fn find(&self, mut predicate: impl FnMut(&T) -> bool) -> Option<&T> {
         Iterator::find(&mut self.as_ref().iter(), |item| predicate(item))
+    }
+
+    fn find_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> Option<&T> {
+        let slice = self.as_ref();
+
+        equal_index_by(slice, &mut comparator).map(|idx| &slice[idx])
     }
 
     fn find_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize> {
         self.as_ref().iter().position(predicate)
     }
 
+    fn find_index_equal_in_sorted_by(
+        &self,
+        mut comparator: impl FnMut(&T) -> Ordering,
+    ) -> Option<usize> {
+        equal_index_by(self.as_ref(), &mut comparator)
+    }
+
     fn find_last(&self, mut predicate: impl FnMut(&T) -> bool) -> Option<&T> {
         self.as_ref().iter().rfind(|item| predicate(item))
     }
 
+    fn find_last_equal_in_sorted_by(
+        &self,
+        mut comparator: impl FnMut(&T) -> Ordering,
+    ) -> Option<&T> {
+        let slice = self.as_ref();
+
+        equal_last_index_by(slice, &mut comparator).map(|idx| &slice[idx])
+    }
+
     fn find_last_index(&self, predicate: impl FnMut(&T) -> bool) -> Option<usize> {
         self.as_ref().iter().rposition(predicate)
+    }
+
+    fn find_last_index_equal_in_sorted_by(
+        &self,
+        mut comparator: impl FnMut(&T) -> Ordering,
+    ) -> Option<usize> {
+        equal_last_index_by(self.as_ref(), &mut comparator)
     }
 
     fn flat(&self) -> Vec<<T>::Item>
@@ -554,8 +758,16 @@ where
         self.as_ref().iter().any(predicate)
     }
 
+    fn some_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> bool {
+        equal_index_by(self.as_ref(), &mut comparator).is_some()
+    }
+
     fn none(&self, predicate: impl FnMut(&T) -> bool) -> bool {
         !self.as_ref().iter().any(predicate)
+    }
+
+    fn none_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> bool {
+        equal_index_by(self.as_ref(), &mut comparator).is_none()
     }
 
     fn subarray<const S: usize>(&self, index: usize) -> &[T; S] {
@@ -576,4 +788,44 @@ where
     {
         self.as_ref().iter()
     }
+}
+
+fn lower_bound_by<T, F>(slice: &[T], comparator: &mut F) -> usize
+where
+    F: FnMut(&T) -> Ordering,
+{
+    slice.partition_point(|item| comparator(item).is_lt())
+}
+
+fn equal_index_by<T, F>(slice: &[T], comparator: &mut F) -> Option<usize>
+where
+    F: FnMut(&T) -> Ordering,
+{
+    let idx = lower_bound_by(slice, comparator);
+    (idx < slice.len() && comparator(&slice[idx]).is_eq()).then_some(idx)
+}
+
+fn upper_bound_by<T, F>(slice: &[T], comparator: &mut F) -> usize
+where
+    F: FnMut(&T) -> Ordering,
+{
+    slice.partition_point(|item| !comparator(item).is_gt())
+}
+
+fn equal_last_index_by<T, F>(slice: &[T], comparator: &mut F) -> Option<usize>
+where
+    F: FnMut(&T) -> Ordering,
+{
+    let end = upper_bound_by(slice, comparator);
+    (end > 0 && comparator(&slice[end - 1]).is_eq()).then(|| end - 1)
+}
+
+fn equal_range_by<T, F>(slice: &[T], comparator: &mut F) -> Option<(usize, usize)>
+where
+    F: FnMut(&T) -> Ordering,
+{
+    let start = equal_index_by(slice, comparator)?;
+    let end = start + upper_bound_by(&slice[start..], comparator);
+
+    (start < end).then_some((start, end))
 }
