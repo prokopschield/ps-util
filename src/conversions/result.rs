@@ -1,5 +1,7 @@
 #[allow(clippy::missing_errors_doc)]
+/// Convenience constructors for `Result` and `Option` values.
 pub trait ToResult {
+    /// Wraps `self` in `Ok(self)`.
     #[inline]
     fn ok<Err>(self) -> Result<Self, Err>
     where
@@ -8,6 +10,7 @@ pub trait ToResult {
         Ok(self)
     }
 
+    /// Wraps `self` in `Err(self)`.
     #[inline]
     fn err<Any>(self) -> Result<Any, Self>
     where
@@ -16,6 +19,7 @@ pub trait ToResult {
         Err(self)
     }
 
+    /// Wraps `self` in `Some(self)`.
     #[inline]
     fn some(self) -> Option<Self>
     where
@@ -27,9 +31,15 @@ pub trait ToResult {
 
 impl<T> ToResult for T {}
 
-#[allow(clippy::missing_errors_doc)]
+/// Conversions between `Result` and `Option` with optional value transformation.
 pub trait ResConv<T, E> {
+    /// Converts into `Option<T>`, dropping any error information.
     fn into_option(self) -> Option<T>;
+
+    /// Converts into `Result<T, E>`.
+    ///
+    /// # Errors
+    /// Returns `Err(E)` when the source value represents an absent or failed state.
     fn into_result(self) -> Result<T, E>;
 }
 
@@ -39,15 +49,12 @@ where
 {
     #[inline]
     fn into_option(self) -> Option<Output> {
-        self.map_or_else(|_| None, |value| value.into().some())
+        self.map(Into::into).ok()
     }
 
     #[inline]
     fn into_result(self) -> Result<Output, Err> {
-        match self {
-            Ok(value) => value.into().ok(),
-            Err(err) => err.err(),
-        }
+        self.map(Into::into)
     }
 }
 
@@ -57,7 +64,7 @@ where
 {
     #[inline]
     fn into_option(self) -> Option<Output> {
-        self.map_or_else(|| None, |value| value.into().some())
+        self.map(Into::into)
     }
 
     /// - Transforms `Some(T)` into `Ok(T)`.
@@ -67,6 +74,6 @@ where
     /// - Returns `Err(Err::Default())` if `self` is `None`.
     #[inline]
     fn into_result(self) -> Result<Output, Err> {
-        self.map_or_else(|| Err::default().err(), |value| value.into().ok())
+        self.map(Into::into).ok_or_else(Err::default)
     }
 }

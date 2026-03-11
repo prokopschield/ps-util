@@ -1,6 +1,7 @@
 /// Returns a reference to a contiguous subarray of length `S` starting at `index`.
 ///
 /// Returns `None` if the requested range exceeds the slice bounds.
+/// Returns `None` if `index + S` overflows.
 ///
 /// This is the bounds-checked variant. For an unchecked version, see `subarray_unchecked`.
 ///
@@ -28,5 +29,6 @@
 /// assert_eq!(subarray_checked::<3, &str>(&vec, 2), None);
 /// ```
 pub fn subarray_checked<const S: usize, T>(slice: &[T], index: usize) -> Option<&[T; S]> {
-    slice.get(index..index + S)?.try_into().ok()
+    let end = index.checked_add(S)?;
+    slice.get(index..end)?.try_into().ok()
 }

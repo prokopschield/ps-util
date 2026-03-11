@@ -60,6 +60,13 @@ fn index_far_beyond_length() {
 }
 
 #[test]
+fn index_plus_size_overflow_returns_none() {
+    let data = [1, 2, 3];
+    let chunk: Option<&[i32; 1]> = subarray_checked::<1, i32>(&data, usize::MAX);
+    assert_eq!(chunk, None);
+}
+
+#[test]
 fn range_exceeds_bounds() {
     let data = [1, 2, 3, 4, 5];
     let chunk: Option<&[i32; 3]> = subarray_checked::<3, i32>(&data, 3);

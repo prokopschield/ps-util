@@ -3,6 +3,7 @@ name = "ps-util"
 version = "0.1.0-6"
 edition = "2021"
 description = "This crate aims to provide generally helpful utility functions and traits."
+documentation = "https://docs.rs/ps-util"
 license = "GPL-3.0-or-later"
 
 [dependencies]
