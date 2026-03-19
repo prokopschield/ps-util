@@ -30,5 +30,5 @@
 /// ```
 pub fn subarray_checked<const S: usize, T>(slice: &[T], index: usize) -> Option<&[T; S]> {
     let end = index.checked_add(S)?;
-    slice.get(index..end)?.try_into().ok()
+    slice.get(index..end)?.as_array()
 }
