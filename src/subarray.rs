@@ -1,8 +1,6 @@
+use crate::subarray_checked;
+
 /// Get a subarray of length `S` at `index`.
-///
-/// # Safety
-///
-/// This function is safe if given a valid slice.
 ///
 /// # Examples
 ///
@@ -31,6 +29,7 @@
 /// let data = [1, 2, 3];
 /// let _chunk: &[i32; 3] = subarray::<3, i32>(&data, 1);
 /// ```
+#[allow(clippy::expect_used)]
 pub fn subarray<const S: usize, T>(slice: &[T], index: usize) -> &[T; S] {
-    unsafe { &*slice[index..index + S].as_ptr().cast::<[T; S]>() }
+    subarray_checked(slice, index).expect("range end index out of range for subarray")
 }

@@ -112,28 +112,28 @@ fn test_subarray_shares_memory() {
 // ============ Panic Cases ============
 
 #[test]
-#[should_panic(expected = "range end index")]
+#[should_panic(expected = "range end index out of range for subarray")]
 fn test_panic_index_out_of_bounds() {
     let data = [1, 2, 3];
     let _result: &[i32; 2] = subarray::<2, i32>(&data, 3);
 }
 
 #[test]
-#[should_panic(expected = "range end index")]
+#[should_panic(expected = "range end index out of range for subarray")]
 fn test_panic_insufficient_elements() {
     let data = [1, 2];
     let _result: &[i32; 5] = subarray::<5, i32>(&data, 0);
 }
 
 #[test]
-#[should_panic(expected = "range end index")]
+#[should_panic(expected = "range end index out of range for subarray")]
 fn test_panic_zero_slice_length() {
     let data: [i32; 0] = [];
     let _result: &[i32; 1] = subarray::<1, i32>(&data, 0);
 }
 
 #[test]
-#[should_panic(expected = "range end index")]
+#[should_panic(expected = "range end index out of range for subarray")]
 fn test_panic_nonzero_index_short_slice() {
     let data = [1];
     let _result: &[i32; 1] = subarray::<1, i32>(&data, 1);
