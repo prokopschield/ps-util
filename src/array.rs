@@ -318,19 +318,16 @@ pub trait Array<T> {
 
     /// Concatenates all elements into a string, separated by the given separator.
     ///
-    /// # Errors
-    ///
-    /// Errors are passed from the [`std::fmt::Display`] implementation.
-    ///
     /// # Examples
     ///
     /// ```
     /// use ps_util::Array;
     /// let arr = [1, 2, 3];
-    /// assert_eq!(arr.join(", ").unwrap(), "1, 2, 3");
+    /// assert_eq!(arr.join(", "), "1, 2, 3");
     /// ```
-    fn join(&self, separator: &str) -> Result<String, std::fmt::Error>
+    fn join<S>(&self, separator: &S) -> String
     where
+        S: std::fmt::Display + ?Sized,
         T: std::fmt::Display;
 
     /// Returns an iterator of indices (0, 1, 2, ...).
@@ -700,22 +697,19 @@ where
         self.as_ref().is_empty()
     }
 
-    fn join(&self, separator: &str) -> Result<String, std::fmt::Error>
+    fn join<S>(&self, separator: &S) -> String
     where
+        S: std::fmt::Display + ?Sized,
         T: std::fmt::Display,
     {
-        let mut a = String::new();
-        let mut iterator = self.as_ref().iter();
+        let mut iter = self.as_ref().iter();
+        let first = iter.next().map(ToString::to_string).unwrap_or_default();
 
-        if let Some(first) = iterator.next() {
-            write!(&mut a, "{first}")?;
-
-            for item in iterator {
-                write!(&mut a, "{separator}{item}")?;
-            }
-        }
-
-        Ok(a)
+        iter.fold(first, |mut out, item| {
+            #[allow(clippy::expect_used)]
+            write!(out, "{separator}{item}").expect("writing to String failed");
+            out
+        })
     }
 
     fn keys(&self) -> impl Iterator<Item = usize> {

@@ -1,5 +1,6 @@
 #![allow(clippy::expect_used)]
 mod array_equal_in_sorted_by;
+mod array_join;
 mod array_none;
 mod conversions;
 mod subarray;
