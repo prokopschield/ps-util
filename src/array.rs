@@ -763,11 +763,11 @@ where
     }
 
     fn none(&self, predicate: impl FnMut(&T) -> bool) -> bool {
-        !self.as_ref().iter().any(predicate)
+        !self.some(predicate)
     }
 
-    fn none_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> bool {
-        equal_index_by(self.as_ref(), &mut comparator).is_none()
+    fn none_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> bool {
+        !self.some_equal_in_sorted_by(comparator)
     }
 
     fn subarray<const S: usize>(&self, index: usize) -> &[T; S] {
