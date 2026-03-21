@@ -67,7 +67,9 @@ pub trait Array<T> {
     /// **Only the first and last elements are checked.**
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(1)`.
     ///
@@ -99,9 +101,56 @@ pub trait Array<T> {
     /// Returns the first element equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If the slice is not sorted according to the
+    /// comparator, the result is undefined**: the method will not panic,
+    /// but may return `None` even when a match exists. This includes the
+    /// case where the comparator is written in the wrong direction
+    /// relative to the actual sort order.
     ///
     /// Time complexity: `O(log n)`.
+    ///
+    /// # Comparator direction pitfall
+    ///
+    /// The comparator must produce an [`Ordering`] that is consistent with
+    /// how the slice is sorted. Getting the direction wrong violates this
+    /// precondition, and is particularly insidious because
+    /// **the code compiles, runs without
+    /// panicking, and silently returns incorrect results.**
+    ///
+    /// This happens because [`Ordering::Equal`] is symmetric:
+    /// `a.cmp(&b) == Equal` ⟺ `b.cmp(&a) == Equal`.
+    ///
+    /// In practice:
+    /// - **Ascending** slice => `|item| item.cmp(&target)`
+    /// - **Descending** slice => `|item| target.cmp(item)`
+    ///
+    /// With simple integers, the mistake is easy to spot;
+    /// with structs or compound keys, it becomes much harder to notice:
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// use std::cmp::Ordering;
+    ///
+    /// struct Event { timestamp: u64, payload: String }
+    ///
+    /// let log: Vec<Event> = vec![
+    ///     Event { timestamp: 100, payload: "a".into() },
+    ///     Event { timestamp: 200, payload: "b".into() },
+    ///     Event { timestamp: 300, payload: "c".into() },
+    /// ];
+    ///
+    /// let target_ts: u64 = 200;
+    ///
+    /// // CORRECT: comparator matches the ascending sort order:
+    /// let found = log.find_equal_in_sorted_by(|e| e.timestamp.cmp(&target_ts));
+    /// assert_eq!(found.map(|e| &*e.payload), Some("b"));
+    ///
+    /// // WRONG: comparator is reversed; result is undefined:
+    /// let found = log.find_equal_in_sorted_by(|e| target_ts.cmp(&e.timestamp));
+    /// assert!(found.is_none()); // silently misses the match
+    /// ```
+    ///
+    /// This pitfall applies equally to all `*_equal_in_sorted_by` methods.
     ///
     /// # Examples
     ///
@@ -128,7 +177,9 @@ pub trait Array<T> {
     /// Returns the index of the first element equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(log n)`.
     ///
@@ -160,7 +211,9 @@ pub trait Array<T> {
     /// Returns the last element equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(log n)`.
     ///
@@ -189,7 +242,9 @@ pub trait Array<T> {
     /// Returns the index of the last element equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(log n)`.
     ///
@@ -222,7 +277,9 @@ pub trait Array<T> {
     /// Returns all elements equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(log n + k)`, where `k` is the number of matches.
     ///
@@ -443,7 +500,9 @@ pub trait Array<T> {
     /// Tests whether any element is equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(log n)`.
     ///
@@ -475,7 +534,9 @@ pub trait Array<T> {
     /// Tests whether no element is equal to the comparator target.
     ///
     /// The slice must be sorted according to the same ordering used by
-    /// `comparator`.
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
     ///
     /// Time complexity: `O(log n)`.
     ///
