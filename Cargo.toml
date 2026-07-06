@@ -1,6 +1,6 @@
 [package]
 name = "ps-util"
-version = "0.1.0-8"
+version = "0.1.0-9"
 edition = "2021"
 rust-version = "1.93"
 description = "This crate aims to provide generally helpful utility functions and traits."
