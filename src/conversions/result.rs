@@ -1,5 +1,5 @@
-#[allow(clippy::missing_errors_doc)]
 /// Convenience constructors for `Result` and `Option` values.
+#[allow(clippy::missing_errors_doc)]
 pub trait ToResult {
     /// Wraps `self` in `Ok(self)`.
     #[inline]
