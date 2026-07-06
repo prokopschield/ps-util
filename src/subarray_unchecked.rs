@@ -6,6 +6,8 @@
 ///
 /// The caller must ensure that `index + S <= slice.len()`. Violating this is undefined behavior.
 ///
+/// In debug builds, this precondition is checked with a `debug_assert!`.
+///
 /// # Examples
 ///
 /// ```
@@ -26,5 +28,7 @@
 /// assert_eq!(chunk, &["a", "b", "c"]);
 /// ```
 pub const unsafe fn subarray_unchecked<const S: usize, T>(slice: &[T], index: usize) -> &[T; S] {
+    debug_assert!(S <= slice.len() && index <= slice.len() - S);
+
     &*slice.as_ptr().add(index).cast::<[T; S]>()
 }
