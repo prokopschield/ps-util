@@ -276,6 +276,8 @@ pub trait Array<T> {
 
     /// Returns all elements equal to the comparator target.
     ///
+    /// See [`Array::slice_equal_in_sorted_by`] for a zero-copy variant.
+    ///
     /// The slice must be sorted according to the same ordering used by
     /// `comparator`. **If it is not, the result is undefined.** See
     /// [`Array::find_equal_in_sorted_by`] for details on the comparator
@@ -487,6 +489,29 @@ pub trait Array<T> {
     /// ```
     fn slice(&self, start: usize, end: Option<usize>) -> &[T];
 
+    /// Returns the subslice of all elements equal to the comparator target.
+    ///
+    /// Equal elements in a sorted slice are contiguous, so this is the
+    /// zero-copy counterpart of [`Array::filter_equal_in_sorted_by`].
+    /// Returns an empty slice if there is no match.
+    ///
+    /// The slice must be sorted according to the same ordering used by
+    /// `comparator`. **If it is not, the result is undefined.** See
+    /// [`Array::find_equal_in_sorted_by`] for details on the comparator
+    /// direction pitfall.
+    ///
+    /// Time complexity: `O(log n)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ps_util::Array;
+    /// let arr = [1, 2, 2, 2, 3];
+    /// assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&2)), &[2, 2, 2]);
+    /// assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&5)), &[]);
+    /// ```
+    fn slice_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> &[T];
+
     /// Tests whether any element matches the predicate.
     ///
     /// Returns `true` if the predicate returns `true` for at least one element.
@@ -668,17 +693,11 @@ where
             .collect()
     }
 
-    fn filter_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> Vec<T>
+    fn filter_equal_in_sorted_by(&self, comparator: impl FnMut(&T) -> Ordering) -> Vec<T>
     where
         T: Clone,
     {
-        let slice = self.as_ref();
-
-        let Some((start, end)) = equal_range_by(slice, &mut comparator) else {
-            return Vec::new();
-        };
-
-        slice[start..end].to_vec()
+        self.slice_equal_in_sorted_by(comparator).to_vec()
     }
 
     fn find(&self, mut predicate: impl FnMut(&T) -> bool) -> Option<&T> {
@@ -813,6 +832,16 @@ where
         let end = end.unwrap_or(len).clamp(start, len);
 
         &full[start..end]
+    }
+
+    fn slice_equal_in_sorted_by(&self, mut comparator: impl FnMut(&T) -> Ordering) -> &[T] {
+        let slice = self.as_ref();
+
+        let Some((start, end)) = equal_range_by(slice, &mut comparator) else {
+            return &[];
+        };
+
+        &slice[start..end]
     }
 
     fn some(&self, predicate: impl FnMut(&T) -> bool) -> bool {

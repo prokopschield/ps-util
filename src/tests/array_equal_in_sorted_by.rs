@@ -37,6 +37,10 @@ fn ascending_equal_in_sorted_by_variants_match_linear_equivalents() {
             expected_filter
         );
         assert_eq!(
+            arr.slice_equal_in_sorted_by(|x| x.cmp(&target)),
+            expected_filter
+        );
+        assert_eq!(
             arr.some_equal_in_sorted_by(|x| x.cmp(&target)),
             expected_some
         );
@@ -87,6 +91,10 @@ fn descending_equal_in_sorted_by_variants_match_linear_equivalents() {
             expected_filter
         );
         assert_eq!(
+            arr.slice_equal_in_sorted_by(|x| target.cmp(x)),
+            expected_filter
+        );
+        assert_eq!(
             arr.some_equal_in_sorted_by(|x| target.cmp(x)),
             expected_some
         );
@@ -117,6 +125,7 @@ fn empty_array_returns_consistent_results() {
         arr.filter_equal_in_sorted_by(|x| x.cmp(&target)),
         Vec::<i32>::new()
     );
+    assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&target)), &[]);
     assert!(!arr.some_equal_in_sorted_by(|x| x.cmp(&target)));
     assert!(arr.none_equal_in_sorted_by(|x| x.cmp(&target)));
     assert!(arr.every_equal_in_sorted_by(|x| x.cmp(&target)));
@@ -134,6 +143,7 @@ fn single_element_array_handles_match_and_miss() {
         Some(0)
     );
     assert_eq!(arr.filter_equal_in_sorted_by(|x| x.cmp(&5)), vec![5]);
+    assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&5)), &[5]);
     assert!(arr.some_equal_in_sorted_by(|x| x.cmp(&5)));
     assert!(!arr.none_equal_in_sorted_by(|x| x.cmp(&5)));
     assert!(arr.every_equal_in_sorted_by(|x| x.cmp(&5)));
@@ -146,6 +156,7 @@ fn single_element_array_handles_match_and_miss() {
         arr.filter_equal_in_sorted_by(|x| x.cmp(&4)),
         Vec::<i32>::new()
     );
+    assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&4)), &[]);
     assert!(!arr.some_equal_in_sorted_by(|x| x.cmp(&4)));
     assert!(arr.none_equal_in_sorted_by(|x| x.cmp(&4)));
     assert!(!arr.every_equal_in_sorted_by(|x| x.cmp(&4)));
@@ -166,6 +177,7 @@ fn all_equal_array_covers_full_range_behavior() {
         arr.filter_equal_in_sorted_by(|x| x.cmp(&7)),
         vec![7, 7, 7, 7]
     );
+    assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&7)), &[7, 7, 7, 7]);
     assert!(arr.some_equal_in_sorted_by(|x| x.cmp(&7)));
     assert!(!arr.none_equal_in_sorted_by(|x| x.cmp(&7)));
     assert!(arr.every_equal_in_sorted_by(|x| x.cmp(&7)));
@@ -178,6 +190,7 @@ fn all_equal_array_covers_full_range_behavior() {
         arr.filter_equal_in_sorted_by(|x| x.cmp(&8)),
         Vec::<i32>::new()
     );
+    assert_eq!(arr.slice_equal_in_sorted_by(|x| x.cmp(&8)), &[]);
     assert!(!arr.some_equal_in_sorted_by(|x| x.cmp(&8)));
     assert!(arr.none_equal_in_sorted_by(|x| x.cmp(&8)));
     assert!(!arr.every_equal_in_sorted_by(|x| x.cmp(&8)));
@@ -219,6 +232,10 @@ fn custom_struct_comparator_by_key_works_across_variants() {
     assert_eq!(
         arr.filter_equal_in_sorted_by(|item| item.key.cmp(&2)),
         vec![Item { key: 2, label: "b" }, Item { key: 2, label: "c" }]
+    );
+    assert_eq!(
+        arr.slice_equal_in_sorted_by(|item| item.key.cmp(&2)),
+        &arr[1..3]
     );
     assert!(arr.some_equal_in_sorted_by(|item| item.key.cmp(&4)));
     assert!(arr.none_equal_in_sorted_by(|item| item.key.cmp(&3)));
