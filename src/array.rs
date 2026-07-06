@@ -297,6 +297,8 @@ pub trait Array<T> {
 
     /// Flattens a level of nesting in an array of iterables.
     ///
+    /// Elements are iterated by reference; only the items are cloned.
+    ///
     /// # Examples
     ///
     /// ```
@@ -304,9 +306,11 @@ pub trait Array<T> {
     /// let arr = [vec![1, 2], vec![3, 4]];
     /// assert_eq!(arr.flat(), vec![1, 2, 3, 4]);
     /// ```
-    fn flat(&self) -> Vec<T::Item>
+    fn flat<'a, O>(&'a self) -> Vec<O>
     where
-        T: Clone + IntoIterator;
+        T: 'a,
+        &'a T: IntoIterator<Item = &'a O>,
+        O: Clone + 'a;
 
     /// Maps each element to an iterable and flattens the result.
     ///
@@ -722,11 +726,13 @@ where
         equal_last_index_by(self.as_ref(), &mut comparator)
     }
 
-    fn flat(&self) -> Vec<<T>::Item>
+    fn flat<'a, O>(&'a self) -> Vec<O>
     where
-        T: Clone + IntoIterator,
+        T: 'a,
+        &'a T: IntoIterator<Item = &'a O>,
+        O: Clone + 'a,
     {
-        self.as_ref().iter().cloned().flatten().collect()
+        self.as_ref().iter().flatten().cloned().collect()
     }
 
     fn flat_map<O, I>(&self, mapper: impl FnMut(&T) -> I) -> Vec<O>
